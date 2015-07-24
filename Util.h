@@ -7,12 +7,13 @@
 
 #define str_h
 
+
 struct _str{
 	char* s; /**< string as char array */
 	int len; /**< string length, not including null-termination */
 };
 
-#define SQL_BUF_LEN 65536
+
 #define str_init(_string)  {_string, sizeof(_string) - 1}
 
 typedef enum {
@@ -42,6 +43,6 @@ typedef struct {
 		unsigned int  bitmap_val; /**< Bitmap data type           */
 	} val;
 } db_val_t;
-
-
-
+int db_print_single_json(char* _b, const db_key_t* _k, const db_val_t* _v, const int _n);
+int upsertResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, const char *_r);
+int escapeXML(char *_b, char *_source);
