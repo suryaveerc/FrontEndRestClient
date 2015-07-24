@@ -7,72 +7,87 @@
 
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "Util.h"
+#include "Common.h"
 
+//int main(void){ return 1;}
 
-int main(void)
+int db_print_single_json(char* _b,  const db_key_t* _k, const db_val_t* _v, const int _n)
 {
-	char *jsonBuffer;
-	db_key_t query_cols[13];
-	db_val_t query_vals[13];
-	int n_query_cols = 0;
-	str A = str_init("A");
-	str B = str_init("B");
-	str C = str_init("C");
-	str D = str_init("D");
-	str Av = str_init("AAA");
-	str Bv = str_init("BBB");
-	str Dv = str_init("DDDD");
-
-	query_vals[n_query_cols].val.str_val=Av;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&A;
-	query_vals[n_query_cols].val.str_val=Bv;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&B;
-	query_vals[n_query_cols].val.int_val=12;
-	query_vals[n_query_cols].type=DB_INT;
-	query_cols[n_query_cols++]=&C;
-	query_vals[n_query_cols].val.str_val=Dv;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols]=&D;
-	
-	int status = db_print_single_json(&jsonBuffer,SQL_BUF_LEN,query_cols,query_vals,n_query_cols);
-
-	printf("Return status : %d\n", status);
-}	
-/* [{"domain":"192.168.254.128","username":"microsip"}] */
-int db_print_single_json(char* _b, const int _l, const db_key_t* _k, const db_val_t* _v, const int _n)
-{
-	int i, ret, len = 0;
-	ret = sprintf(_b,"%s","[{");
+	int i, ret, len , _l= 0;
+	_l = JSON_BUF_LEN;
+	ret = sprintf(_b,"%s","{");
 	len=ret;
+	
 	printf("The current value of buffer is: %s\n",_b);
-	if ((!_k) || (!_n) || (!_b) || (!_l) || (!_v)) {
+	if ((!_k) || (!_n) || (!_b) || (!_v)) {
 		return -1;
 	}
 
 	for(i = 0; i <= _n; i++)
 	{
-	
+		printf("Now processing Columns:\t\t %s\n",_k[i]->s);
 		ret = snprintf(_b + len, _l - len, "\"%.*s\":", _k[i]->len, _k[i]->s);
-			printf("The current value of buffer is: %s\n",_b);
+			
 		if (ret < 0 || ret >= (_l - len));
 		len += ret;
 		if(_v[i].type==DB_INT)
 		{
+			printf("Which has value:\t\t %d\n",_v[i].val.int_val);
 			ret = snprintf(_b + len, _l - len, "%d,", _v[i].val.int_val);
-			printf("The current value of buffer is: %s\n",_b);
 			len += ret;
 		}
 		else
 		{
-			ret = snprintf(_b + len, _l - len, "\"%.*s\",", _v[i].val.str_val.len, _v[i].val.str_val.s);				
-			printf("The current value of buffer is: %s\n",_b);
-			len += ret;
+			if(strcmp(_k[i]->s,"body")==0)
+			{
+				ret = escapeXML(_b+len,_v[i].val.str_val.s);
+						printf("Buffer: \t\t %s\n",_b);
+				len += ret;
+			}
+			else
+			{
+				printf("Which has value:\t\t %s\n",_v[i].val.str_val.s);
+				ret = snprintf(_b + len, _l - len, "\"%.*s\",", _v[i].val.str_val.len, _v[i].val.str_val.s);				
+				len += ret;
+			}
+		}
+	printf("Current buffer filled length:\t\t	 %d\n",len);
+	}
+	ret = snprintf(_b+len-1,_l-len-1,"%s","}");
+//	printf("The current value of buffer is: %s\n",_b);
+	return len;
+}
+
+int escapeXML(char *_b, char *_source)
+{
+	char *_s = _source;
+	char *escapeString = "&quot;";
+	char *t1=escapeString;
+	int len = 0;
+	len = len + sprintf(_b++,"%s","\"");
+//	printf("Buffer :\t %s\n",_b);
+	while(*_s!='\0')	
+	{	escapeString = t1;
+		if(*_s == '\"')
+		{
+			while(*escapeString)
+			{
+				*_b++ = *escapeString++;
+				++len;
+			}
+			++_s;
+		}
+		else
+		{
+			++len;
+			*_b++ = *_s++;
 		}
 	}
-	ret = snprintf(_b+len-1,_l-len-1,"%s","}]");
-	printf("The current value of buffer is: %s\n",_b);
+	*_b='\0';
+	len = len + sprintf(_b,"%s","\",");
+	printf("%d\n",len);
 	return len;
 }
