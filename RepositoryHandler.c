@@ -23,6 +23,7 @@ Input Parameters:
 #include "Util.h"
 #include "RepositoryAccessClient.h"
 #include "RepositoryHandler.h"
+#include "../../dprint.h"
 
 static const char *R_PRESENTITY ="presentity";
 static const char *ROOT_URL ="http://192.168.254.1:8080/PresenceRepository/rest/V1/";
@@ -39,22 +40,22 @@ int upsertResource(const db_key_t* _k, const db_val_t* _v, const int _n, const c
 
 	if(!status)
 	{
-		printf("Unable to process the requested input");
+		LM_DBG("Unable to process the requested input");
 		free(jsonBuffer);
 		return -1;
 	}
 
 	char *url = malloc(MAX_URL_LEN);
 
-	strcat(url,ROOT_URL);
-	strcat(url,R_PRESENTITY);
-//	printf("The URL is %s: \n",url);
+	memcpy ( url, ROOT_URL, strlen(ROOT_URL)+1 );
+	memcpy ( url+strlen(ROOT_URL), R_PRESENTITY, strlen(R_PRESENTITY)+1 );
+	LM_DBG("The URL is %s: \n",url);
 //	printf("The current value of buffer is: %s\n",jsonBuffer);
 	if(!_r)
 	{
 		/* Presence of _r represent the request for PUT request*/
 		status = curl_post_to_url(url,jsonBuffer);
-		printf("POST to %s successful with status %d. \n",url, status);
+		LM_DBG("POST to %s successful with status %d. \n",url, status);
 	}
 	free(url);
 	free(jsonBuffer);

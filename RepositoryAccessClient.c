@@ -9,9 +9,11 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include "RepositoryAccessClient.h"
+#include "../../dprint.h"
 
 int curl_post_to_url(const char* url, char *postdata)
 {
+	LM_DBG("ENTER INTO curl_post_to_url");
 	CURL *curl;
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -25,6 +27,7 @@ int curl_post_to_url(const char* url, char *postdata)
 	curl = curl_easy_init();
 	if(curl)
 	{
+		LM_DBG("ENTER INTO curl_post_to_url.....INIT");
 
 		/* set URL */
 		curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -36,10 +39,12 @@ int curl_post_to_url(const char* url, char *postdata)
 		res = curl_easy_perform(curl);
 		if(res!=CURLE_OK)
 		{
-			 fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
+			LM_DBG("curl error OCCURED");
+			 LM_DBG("curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
 		}
 
-		curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);	
+		curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+		LM_DBG("HTTP ERROR CODE %d",http_code);
 		curl_easy_cleanup(curl);
 	}
 	curl_slist_free_all(headers);
