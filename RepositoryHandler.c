@@ -6,14 +6,6 @@
  */
 
 
-/* This function will insert/update the resource in the repository.
-Input Parameters:
- db_key_t* _k: List of Columns.
- db_val_t* _v: List of Values
- int _n total: number of values
- char _t: Type of resource (Presentity/Subscriber/ etc)
- char _r: Id of resource in case of PUT request. Optional.
-*/
 
 
 #include <stdio.h>
@@ -23,9 +15,9 @@ Input Parameters:
 #include "Util.h"
 #include "RepositoryAccessClient.h"
 #include "RepositoryHandler.h"
-#include "../../dprint.h"
+//#include "../../dprint.h"
 
-static const char *R_PRESENTITY ="presentity";
+static const char *R_PRESENTITY ="presentity/";
 static const char *ROOT_URL ="http://192.168.254.1:8080/PresenceRepository/rest/V1/";
 
 int upsertResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, const char *_r)
@@ -40,89 +32,62 @@ int upsertResource(const db_key_t* _k, const db_val_t* _v, const int _n, const c
 
 	if(!status)
 	{
-		LM_DBG("Unable to process the requested input");
+		printf("Unable to process the requested input");
 		free(jsonBuffer);
 		return -1;
 	}
-
+// TODO: Move this to UTIL.c
 	char *url = malloc(MAX_URL_LEN);
-
 	memcpy ( url, ROOT_URL, strlen(ROOT_URL)+1 );
 	memcpy ( url+strlen(ROOT_URL), R_PRESENTITY, strlen(R_PRESENTITY)+1 );
-	LM_DBG("The URL is %s: \n",url);
-//	printf("The current value of buffer is: %s\n",jsonBuffer);
+	printf("The URL is %s: \n",url);
 	if(!_r)
 	{
 		/* Presence of _r represent the request for PUT request*/
 		status = curl_post_to_url(url,jsonBuffer);
-		LM_DBG("POST to %s successful with status %d. \n",url, status);
+		if(status)
+			printf("POST to %s successful with status %d. \n",url, status);
+		else
+			printf("POST to %s failed. \n",url);
 	}
 	free(url);
 	free(jsonBuffer);
 	return (status!=200 ? 0 : 1);
 }
-/*
-int main(void)
+
+int getResource(const db_key_t* _k, const db_val_t* _v, const int _n, db_res_t** _r, const char *_rt, char* _p, int _f)
 {
-	printf("Repository Handling MOdule Initialized\n");
-	db_key_t query_cols[8];
-	db_val_t query_vals[8];
-	int n_query_cols = 0;
-	str domain	= str_init("domain");
-	str username	= str_init("username");
-	str event	= str_init("event");
-	str etag	= str_init("etag");
-	str expires	= str_init("expires");
-	str sender	= str_init("sender");
-	str body	= str_init("body");
-	str receivedTime	= str_init("receivedTime");
-
-	str domainValue	= str_init("192.168.254.129");
-	str usernameValue	= str_init("suryaveer1");
-	str eventValue	= str_init("presence");
-	str etagValue	= str_init("a.1437194656.2922.1.0");
-	int expiresValue	= 1437200355;
-	str senderValue	= str_init("");
-	str bodyValue	= str_init("<?xml version=\"1.0\" encoding=\"UTF-8\"?><presence entity=\"sip:microsip@192.168.254.128\" xmlns=\"urn:ietf:params:xml:ns:pidf\" xmlns:dm=\"urn:ietf:params:xml:ns:pidf:data-model\" xmlns:rpid=\"urn:ietf:params:xml:ns:pidf:rpid\"> <tuple id=\"pj3812dd2fb6f24ca5956323c7895bc2c6\">  <status>   <basic>open</basic>  </status>  <timestamp>2015-07-18T01:19:15.172Z</timestamp>  <note>Idle</note> </tuple> <dm:person id=\"pj155edc6d5cb64829a79b25e2ff4a9b5e\">  <rpid:activities>   <rpid:unknown />  </rpid:activities>  <dm:note>Idle</dm:note> </dm:person></presence>");
-	int receivedTimeValue	= 1437196755;
-
-
-	query_vals[n_query_cols].val.str_val=domainValue;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&domain;
-
-	query_vals[n_query_cols].val.str_val=usernameValue;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&username;
-
-	query_vals[n_query_cols].val.str_val=eventValue;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&event;
-
-	query_vals[n_query_cols].val.str_val=etagValue;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&etag;
-
-	query_vals[n_query_cols].val.int_val=expiresValue;
-	query_vals[n_query_cols].type=DB_INT;
-	query_cols[n_query_cols++]=&expires;
-
-	query_vals[n_query_cols].val.str_val=senderValue;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&sender;
-
-	query_vals[n_query_cols].val.str_val=bodyValue;
-	query_vals[n_query_cols].type=DB_STR;
-	query_cols[n_query_cols++]=&body;
 	
-	query_vals[n_query_cols].val.int_val=receivedTimeValue;
-	query_vals[n_query_cols].type=DB_INT;
-	query_cols[n_query_cols]=&receivedTime;
+	if(!_k || !_v || !_n || !_p || !_rt)
+	{
+		printf("Required values not provided.\n");
+		return -1;
+	}
+	char* url = (char*)malloc(MAX_URL_LEN);
+	memcpy ( url, ROOT_URL, strlen(ROOT_URL)+1 );
+	memcpy ( url+strlen(ROOT_URL), _rt, strlen(_rt)+1 );
+	memcpy ( url+strlen(url), _p, strlen(_p)+1 );
+	if(create_get_url(_k, _v, _n, url, _f)<0)
+	{
+		printf("Failed to process request. URL creation failed. Resource is: %s\n", _p);
+		return -1;
+	}
+	int status = 0;	
+	struct result_st {
+	char* payload;
+	int size;
+	};
+	struct result_st result;
+	result.payload = (char*)malloc(1);
+	result.size=0;
+	status = curl_get_from_url(url, &result);
+	printf("GETRESOURCE: result after GET: %s\n",result.payload);
+	if(status)
+		printf("GEt from %s successful with status %d. \n",url, status);
+	else
+		printf("GET from %s failed with status %d. \n",url, status);
+	free(url);
+	parse_json_to_result(result.payload,_r);
+	return (status!=200 ? 0 : 1);
+}
 
-	int status = 0; 
-	status = upsertResource(query_cols,  query_vals,  n_query_cols,  "Presentity",  NULL);
-
-	printf("Return status : %d\n", status);
-
-	return 1;
-}*/
