@@ -17,6 +17,7 @@
 #include "RepositoryHandler.h"
 //#include "../../dprint.h"
 
+
 static const char *R_PRESENTITY ="presentity/";
 static const char *ROOT_URL ="http://192.168.254.1:8080/PresenceRepository/rest/V1/";
 
@@ -56,8 +57,7 @@ int upsertResource(const db_key_t* _k, const db_val_t* _v, const int _n, const c
 }
 
 int getResource(const db_key_t* _k, const db_val_t* _v, const int _n, db_res_t** _r, const char *_rt, char* _p, int _f)
-{
-	
+{	
 	if(!_k || !_v || !_n || !_p || !_rt)
 	{
 		printf("Required values not provided.\n");
@@ -73,21 +73,17 @@ int getResource(const db_key_t* _k, const db_val_t* _v, const int _n, db_res_t**
 		return -1;
 	}
 	int status = 0;	
-	struct result_st {
-	char* payload;
-	int size;
-	};
-	struct result_st result;
-	result.payload = (char*)malloc(1);
-	result.size=0;
+	struct result_st *result;
+	result->payload= (char*)malloc(1);
+	result->size=0;
 	status = curl_get_from_url(url, &result);
-	printf("GETRESOURCE: result after GET: %s\n",result.payload);
+	printf("GETRESOURCE: result after GET: %s\n",result->payload);
 	if(status)
 		printf("GEt from %s successful with status %d. \n",url, status);
 	else
 		printf("GET from %s failed with status %d. \n",url, status);
 	free(url);
-	parse_json_to_result(result.payload,_r);
+	parse_json_to_result(result->payload,_r);
 	return (status!=200 ? 0 : 1);
 }
 

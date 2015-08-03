@@ -14,12 +14,15 @@
 //#include "../../dprint.h"
 
 
+//This generic function failing when values are null.
+//Sending default values from the server.
 int parse_json_to_result(char *json, db_res_t** result)
 {
 	printf("received json: %s\n",json);
 	cJSON *root,*record;
 	int recourdCount = 0;
 	int i=0;
+	int j=0;
 	int int_val=0;
 	char *str_val='\0';
 	
@@ -28,29 +31,25 @@ int parse_json_to_result(char *json, db_res_t** result)
 	printf("array size: %d\n",recourdCount);
 	*result = malloc(sizeof(db_res_t));
 	(*result)->rows =malloc(sizeof(db_row_t)*recourdCount);
-
 	for(i=0;i<recourdCount;i++)
 	{
+		j=0;
 		record = cJSON_GetArrayItem(root, i);
 		(*result)->rows[i].values = malloc(sizeof(db_val_t));
-
 		cJSON *subitem = record-> child;
 		while(subitem)
 		{
-			printf("%s\t:",subitem->string);
 			if(subitem->type == cJSON_Number)
 			{
 				int_val =  cJSON_GetObjectItem(record,subitem->string)->valueint;
-				printf("%d\n",int_val);
-				(*result)->rows[i].values->val.int_val = int_val;
+				(*result)->rows[i].values[j++].val.int_val = int_val;
 			}
 			else
 			{
 				str_val =  cJSON_GetObjectItem(record,subitem->string)->valuestring;
-				printf("%s\n",str_val);
-				(*result)->rows[i].values->val.str_val.s = str_val;
+				(*result)->rows[i].values[j++].val.str_val.s = str_val;
 			}
-		subitem = subitem->next;
+			subitem = subitem->next;
 		}
 	}
 cJSON_Delete(root);

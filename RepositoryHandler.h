@@ -26,5 +26,3 @@ Input Parameters:
 */
 
 int getResource(const db_key_t* _k, const db_val_t* _v, const int _n, db_res_t** _r, const char *_rt, char* _p, int _f);
-int checkResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, char* _p);
-
