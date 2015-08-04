@@ -15,7 +15,7 @@ Input Parameters:
 
 int insertResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, const char *_r);
 
-/* This function will insert/update the resource in the repository.
+/* This function will insert the resource in the repository.
 Input Parameters:
  db_key_t* _k: List of Columns.
  db_val_t* _v: List of Values
@@ -27,7 +27,29 @@ Input Parameters:
 
 int getResource(const db_key_t* _k, const db_val_t* _v, const int _n, db_res_t** _r, const char *_rt, char* _p);
 
-/* This function will insert the resource in the repository.
+/* This function will delete the resource in the repository.
+Input Parameters:
+ db_key_t* _k: List of Columns.
+ db_val_t* _v: List of Values
+ int _n total: number of values
+ char _rt: Type of resource (Presentity/Subscriber/ etc)
+ char _p: Id of resource. ex username@domain.com
+*/
+
+int deleteResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, char* _p);
+
+/* This function will check for the resource in the repository.
+Input Parameters:
+ db_key_t* _k: List of Columns.
+ db_val_t* _v: List of Values
+ int _n total: number of values
+ char _rt: Type of resource (Presentity/Subscriber/ etc)
+ char _p: Id of resource. ex username@domain.com
+*/
+
+int checkResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, char* _p);
+
+/* This function will update the resource in the repository.
 Input Parameters:
  db_key_t* _qk: List of query Columns.
  db_val_t* _qv: List of query Values

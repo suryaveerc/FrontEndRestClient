@@ -56,44 +56,51 @@ cJSON_Delete(root);
 return 1;
 }
 
-int create_url(const db_key_t* _k, const db_val_t* _v, const int _n, char* url)
+int create_url(const db_key_t* _k, const db_val_t* _v, const int _n, char* url, const char* _rt, const char* _r)
 {
 //microsip@192.168.254.128?event=presence
+
+	memcpy(url, ROOT_URL, strlen(ROOT_URL) + 1);
+	memcpy(url + strlen(ROOT_URL), _rt, strlen(_rt) + 1);
 
 	int i, len=0, ret = 0;
 	int _l = MAX_URL_LEN;
 	len = strlen(url);
-	if (!_k || !_v || !_n)
+	if(_r)
 	{
-		printf("Required input parameters not supplied.");
-		return -1;
-	}
-	ret = snprintf(url+strlen(url),_l,"%s","?");
-	len += ret;
-	for(i = 0; i < _n; i++)
-	{
-		
-		if(strcmp(_k[i]->s,"domain") ==0  || strcmp(_k[i]->s,"username")==0)
+		if (!_k || !_v || !_n)
 		{
-			continue;
+			printf("Required input parameters not supplied.");
+			return -1;
 		}
-		if(_v[i].type==DB_INT)
+		memcpy(url + strlen(url), _r, strlen(_r) + 1);
+		ret = snprintf(url+strlen(url),_l,"%s","?");
+		len += ret;
+		for(i = 0; i < _n; i++)
 		{
-			ret = snprintf(url + len, _l - len, "%s=",_k[i]->s);
-			len += ret;				
-			ret = snprintf(url + len, _l - len, "%d&", _v[i].val.int_val);
-			len += ret;
-		}
-		else
-		{
-			ret = snprintf(url + len, _l - len, "%s=", _k[i]->s);
-			len += ret;
-			ret = snprintf(url + len, _l - len, "%.*s&", _v[i].val.str_val.len, _v[i].val.str_val.s);		
-			len += ret;
-		}
-	}
 
-		*(url+len-1)='\0'; // to remove the last comma.
+			if(strcmp(_k[i]->s,"domain") ==0  || strcmp(_k[i]->s,"username")==0)
+			{
+				continue;
+			}
+			if(_v[i].type==DB_INT)
+			{
+				ret = snprintf(url + len, _l - len, "%s=",_k[i]->s);
+				len += ret;
+				ret = snprintf(url + len, _l - len, "%d&", _v[i].val.int_val);
+				len += ret;
+			}
+			else
+			{
+				ret = snprintf(url + len, _l - len, "%s=", _k[i]->s);
+				len += ret;
+				ret = snprintf(url + len, _l - len, "%.*s&", _v[i].val.str_val.len, _v[i].val.str_val.s);
+				len += ret;
+			}
+		}
+
+			*(url+len-1)='\0'; // to remove the last comma.
+	}
 //	printf("Generated URL: %s\n",url);
 	return len<=_l ? 1 :-1;
 }

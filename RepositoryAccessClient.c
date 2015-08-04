@@ -13,6 +13,60 @@
 #include "RepositoryAccessClient.h"
 //#include "../../dprint.h"
 
+//TODO: Lot of duplicate code. Improve by moving into generic code to perform.
+
+int main(void)
+{
+	curl_head("http://192.168.254.1:8080/PresenceRepository/rest/V1/presentity/microsip@192.168.254.228?event=presence&etag=a.1437194656.2922.1.0");
+}
+
+int curl_head(const char* url)
+{
+	if(!url)
+	{
+		printf("URL not provided. Returning with error.\n");
+		return -1;
+	}
+	CURL *curl;
+	CURLcode res;
+	curl_global_init(CURL_GLOBAL_ALL);
+	int http_code = 0;	
+	struct curl_slist *headers =NULL;
+    	headers=curl_slist_append( headers, "charsets: utf-8"); 
+	curl = curl_easy_init();
+	if(curl)
+	{
+		printf("In curl_delete.....\n");
+
+		/* set URL */
+		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "HEAD");
+		curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+
+		res = curl_easy_perform(curl);
+		if(res!=CURLE_OK)
+		{
+			printf("curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
+		}
+		curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+		printf("HTTP return CODE %d\n",http_code);
+	}
+	else
+	{
+		printf("Curl initialization failed.\n");
+		curl_easy_cleanup(curl);
+		curl_slist_free_all(headers);
+		curl_global_cleanup();
+		return -1;
+	}
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	curl_global_cleanup();
+	return http_code;
+	
+}
+
 int curl_delete(const char* url)
 {
 	if(!url)
@@ -111,7 +165,7 @@ int curl_put(const char* url, char* putdata)
 		return http_code;
 
 }
-int curl_post_to_url(const char* url, char *postdata)
+int curl_post(const char* url, char *postdata)
 {
 	if(!url)
 	{
@@ -163,7 +217,7 @@ int curl_post_to_url(const char* url, char *postdata)
 	return http_code;
 }
 
-int curl_get_from_url(const char* url, struct result_st **result)
+int curl_get(const char* url, struct result_st **result)
 {
 	if(!url)
 	{
