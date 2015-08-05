@@ -14,13 +14,12 @@
 #include "RepositoryHandler.h"
 //#include "../../dprint.h"
 
-
 int updateResource(const db_key_t* _qk, const db_val_t* _qv,
 		const db_key_t* _uk, const db_val_t* _uv, const int _qn, const int _un,
 		const char *_rt, const char *_r) {
 
-	if ((!_qk) || (!_qv) || (!_qn) || (!_uk) || (!_uv) || (!_un) || (!_rt) || (!_r))
-	{
+	if ((!_qk) || (!_qv) || (!_qn) || (!_uk) || (!_uv) || (!_un) || (!_rt)
+			|| (!_r)) {
 		printf("Required parameters not received.\n");
 		return -1;
 	}
@@ -49,7 +48,7 @@ int updateResource(const db_key_t* _qk, const db_val_t* _qv,
 
 	free(url);
 	free(jsonBuffer);
-	return (status != 200 ? 0 : 1);
+	return ((status == 200 || status == 204) ? 1 : 0);
 }
 
 int insertResource(const db_key_t* _k, const db_val_t* _v, const int _n,
@@ -87,11 +86,45 @@ int insertResource(const db_key_t* _k, const db_val_t* _v, const int _n,
 	}
 	free(url);
 	free(jsonBuffer);
-	return (status != 200 ? 0 : 1);
+	return (status == 200 ? 1 : 0);
 }
 
 int getResource(const db_key_t* _k, const db_val_t* _v, const int _n,
 		db_res_t** _r, const char *_rt, char* _p) {
+
+	printf("ENTER INTO getResource\n");
+	if (!_rt) {
+		printf("Required values not provided.\n");
+		return -1;
+	}
+	char* url = (char*) malloc(MAX_URL_LEN);
+	if (create_url(_k, _v, _n, url, _rt, _p) < 0) {
+		printf(
+				"Failed to process request. URL creation failed. Resource is: %s\n",
+				_p);
+		return -1;
+	}
+	int status = 0;
+	struct json_response re;
+	struct json_response *jresponse = &re;
+	jresponse->payload = (char*) malloc(1);
+	jresponse->size = 0;
+	status = curl_get(url, &jresponse);
+	printf("GETRESOURCE: result after GET: %s\n", jresponse->payload);
+	if (status == 200) {
+		printf("GEt from %s successful with status %d. \n", url, status);
+		parse_json_to_result(jresponse->payload, _r);
+	} else if (status == -1)
+		printf("GET from %s failed with status %d. \n", url, status);
+	else
+		printf("GET from %s returned with status %d. \n", url, status);
+	free(url);
+//	free(jresponse->payload);
+	return (status == 200 ? 1 : 0);
+}
+
+int checkResource(const db_key_t* _k, const db_val_t* _v, const int _n,
+		const char *_rt, char* _p) {
 	if (!_k || !_v || !_n || !_p || !_rt) {
 		printf("Required values not provided.\n");
 		return -1;
@@ -104,50 +137,26 @@ int getResource(const db_key_t* _k, const db_val_t* _v, const int _n,
 		return -1;
 	}
 	int status = 0;
-	struct result_st *result;
-	result->payload = (char*) malloc(1);
-	result->size = 0;
-	status = curl_get(url, &result);
-	printf("GETRESOURCE: result after GET: %s\n", result->payload);
-	if (status)
-		printf("GEt from %s successful with status %d. \n", url, status);
-	else
-		printf("GET from %s failed with status %d. \n", url, status);
-	free(url);
-	parse_json_to_result(result->payload, _r);
-	return (status != 200 ? 0 : 1);
-}
-
-int checkResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, char* _p)
-{
-	if (!_k || !_v || !_n || !_p || !_rt) {
-		printf("Required values not provided.\n");
-		return -1;
-	}
-	char* url = (char*) malloc(MAX_URL_LEN);
-	if (create_url(_k, _v, _n, url, _rt, _p) < 0) {
-		printf("Failed to process request. URL creation failed. Resource is: %s\n",_p);
-		return -1;
-	}
-	int status = 0;
 	status = curl_head(url);
 	if (status)
 		printf("HEAD for %s successful with status %d. \n", url, status);
 	else
 		printf("HEAD for %s failed with status %d. \n", url, status);
 	free(url);
-	return (status != 200 ? 0 : 1);
+	return (status == 200 ? 1 : 0);
 }
 
-int deleteResource(const db_key_t* _k, const db_val_t* _v, const int _n, const char *_rt, char* _p)
-{
+int deleteResource(const db_key_t* _k, const db_val_t* _v, const int _n,
+		const char *_rt, char* _p) {
 	if (!_k || !_v || !_n || !_p || !_rt) {
 		printf("Required values not provided.\n");
 		return -1;
 	}
 	char* url = (char*) malloc(MAX_URL_LEN);
 	if (create_url(_k, _v, _n, url, _rt, _p) < 0) {
-		printf("Failed to process request. URL creation failed. Resource is: %s\n",_p);
+		printf(
+				"Failed to process request. URL creation failed. Resource is: %s\n",
+				_p);
 		return -1;
 	}
 	int status = 0;
@@ -157,20 +166,20 @@ int deleteResource(const db_key_t* _k, const db_val_t* _v, const int _n, const c
 	else
 		printf("DELETE for %s failed with status %d. \n", url, status);
 	free(url);
-	return (status != 200 ? 0 : 1);
+	return (status == 200 ? 1 : 0);
 }
 /*
-int curl_perform(char* url, char operation)
-{
-	switch(operation)
-	{
-		case DELETE :
-		break;
-		case GET :
-		break;
-		case HEAD :
-		break;
-		default :
-		printf("Invalid Operation\n" );
-	}
-}*/
+ int curl_perform(char* url, char operation)
+ {
+ switch(operation)
+ {
+ case DELETE :
+ break;
+ case GET :
+ break;
+ case HEAD :
+ break;
+ default :
+ printf("Invalid Operation\n" );
+ }
+ }*/

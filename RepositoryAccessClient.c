@@ -5,7 +5,6 @@
  *      Author: suryaveer
  */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,196 +14,165 @@
 
 //TODO: Lot of duplicate code. Improve by moving into generic code to perform.
 
-int main(void)
-{
-	curl_head("http://192.168.254.1:8080/PresenceRepository/rest/V1/presentity/microsip@192.168.254.228?event=presence&etag=a.1437194656.2922.1.0");
-}
-
-int curl_head(const char* url)
-{
-	if(!url)
-	{
+int curl_head(const char* url) {
+	if (!url) {
 		printf("URL not provided. Returning with error.\n");
 		return -1;
 	}
-	CURL *curl;
-	CURLcode res;
-	curl_global_init(CURL_GLOBAL_ALL);
-	int http_code = 0;	
-	struct curl_slist *headers =NULL;
-    	headers=curl_slist_append( headers, "charsets: utf-8"); 
-	curl = curl_easy_init();
-	if(curl)
-	{
-		printf("In curl_delete.....\n");
-
-		/* set URL */
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
-		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "HEAD");
-		curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
-
-		res = curl_easy_perform(curl);
-		if(res!=CURLE_OK)
-		{
-			printf("curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
-		}
-		curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-		printf("HTTP return CODE %d\n",http_code);
-	}
-	else
-	{
-		printf("Curl initialization failed.\n");
-		curl_easy_cleanup(curl);
-		curl_slist_free_all(headers);
-		curl_global_cleanup();
-		return -1;
-	}
-	curl_easy_cleanup(curl);
-	curl_slist_free_all(headers);
-	curl_global_cleanup();
-	return http_code;
-	
-}
-
-int curl_delete(const char* url)
-{
-	if(!url)
-	{
-		printf("URL not provided. Returning with error.\n");
-		return -1;
-	}
-	CURL *curl;
-	CURLcode res;
-	curl_global_init(CURL_GLOBAL_ALL);
-	int http_code = 0;	
-	struct curl_slist *headers =NULL;
-	headers=curl_slist_append(headers, "Accept: application/json");  
-   	headers=curl_slist_append( headers, "Content-Type: application/json");
-    	headers=curl_slist_append( headers, "charsets: utf-8"); 
-	curl = curl_easy_init();
-	if(curl)
-	{
-		printf("In curl_delete.....\n");
-
-		/* set URL */
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
-		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-
-		res = curl_easy_perform(curl);
-		if(res!=CURLE_OK)
-		{
-			printf("curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
-		}
-		curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-		printf("HTTP return CODE %d\n",http_code);
-	}
-	else
-	{
-		printf("Curl initialization failed.\n");
-		curl_easy_cleanup(curl);
-		curl_slist_free_all(headers);
-		curl_global_cleanup();
-		return -1;
-	}
-	curl_easy_cleanup(curl);
-	curl_slist_free_all(headers);
-	curl_global_cleanup();
-	return http_code;
-	
-}
-int curl_put(const char* url, char* putdata)
-{
-	if(!url)
-		{
-			printf("URL not provided. Returning with error.");
-			return -1;
-		}
-	printf("Preparing to PUT to url: %s\n",url);
 	CURL *curl;
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_ALL);
 	int http_code = 0;
-	struct curl_slist *headers =NULL;
-		headers=curl_slist_append(headers, "Accept: application/json");
-	   	headers=curl_slist_append( headers, "Content-Type: application/json");
-	    headers=curl_slist_append( headers, "charsets: utf-8");
+	struct curl_slist *headers = NULL;
+	headers = curl_slist_append(headers, "charsets: utf-8");
+	curl = curl_easy_init();
+	if (curl) {
+		printf("In curl_delete.....\n");
 
+		/* set URL */
+		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "HEAD");
+		curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
 
-		curl = curl_easy_init();
-		if(curl)
-		{
-			printf("In curl_put.....\n");
-
-			/* set URL */
-			curl_easy_setopt(curl, CURLOPT_URL, url);
-			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata);
-			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS,putdata);
-			res = curl_easy_perform(curl);
-			if(res!=CURLE_OK)
-			{
-				printf("curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
-			}
-			curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-			printf("HTTP return CODE %d",http_code);
+		res = curl_easy_perform(curl);
+		if (res != CURLE_OK) {
+			printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 		}
-		else
-		{
-			printf("Curl initialization failed.\n");
-			curl_easy_cleanup(curl);
-			curl_slist_free_all(headers);
-			curl_global_cleanup();
-			return -1;
-		}
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+		printf("HTTP return CODE %d\n", http_code);
+	} else {
+		printf("Curl initialization failed.\n");
 		curl_easy_cleanup(curl);
 		curl_slist_free_all(headers);
 		curl_global_cleanup();
-		return http_code;
+		return -1;
+	}
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	curl_global_cleanup();
+	return http_code;
 
 }
-int curl_post(const char* url, char *postdata)
-{
-	if(!url)
-	{
+
+int curl_delete(const char* url) {
+	if (!url) {
 		printf("URL not provided. Returning with error.\n");
 		return -1;
 	}
-	
-	printf("Preparing to POST to URL: %s\n",url);
 	CURL *curl;
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_ALL);
-	int http_code = 0;	
-	struct curl_slist *headers =NULL;
-	headers=curl_slist_append(headers, "Accept: application/json");  
-   	headers=curl_slist_append( headers, "Content-Type: application/json");
-    	headers=curl_slist_append( headers, "charsets: utf-8"); 
-	
+	int http_code = 0;
+	struct curl_slist *headers = NULL;
+	headers = curl_slist_append(headers, "Accept: application/json");
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+	headers = curl_slist_append(headers, "charsets: utf-8");
+	curl = curl_easy_init();
+	if (curl) {
+		printf("In curl_delete.....\n");
+
+		/* set URL */
+		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+
+		res = curl_easy_perform(curl);
+		if (res != CURLE_OK) {
+			printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+		}
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+		printf("HTTP return CODE %d\n", http_code);
+	} else {
+		printf("Curl initialization failed.\n");
+		curl_easy_cleanup(curl);
+		curl_slist_free_all(headers);
+		curl_global_cleanup();
+		return -1;
+	}
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	curl_global_cleanup();
+	return http_code;
+
+}
+int curl_put(const char* url, char* putdata) {
+	if (!url) {
+		printf("URL not provided. Returning with error.");
+		return -1;
+	}
+	printf("Preparing to PUT to url: %s\n", url);
+	CURL *curl;
+	CURLcode res;
+	curl_global_init(CURL_GLOBAL_ALL);
+	int http_code = 0;
+	struct curl_slist *headers = NULL;
+	headers = curl_slist_append(headers, "Accept: application/json");
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+	headers = curl_slist_append(headers, "charsets: utf-8");
 
 	curl = curl_easy_init();
-	if(curl)
-	{
+	if (curl) {
+		printf("In curl_put.....\n");
+
+		/* set URL */
+		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata);
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata);
+		res = curl_easy_perform(curl);
+		if (res != CURLE_OK) {
+			printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+		}
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+		printf("HTTP return CODE %d", http_code);
+	} else {
+		printf("Curl initialization failed.\n");
+		curl_easy_cleanup(curl);
+		curl_slist_free_all(headers);
+		curl_global_cleanup();
+		return -1;
+	}
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	curl_global_cleanup();
+	return http_code;
+
+}
+int curl_post(const char* url, char *postdata) {
+	if (!url) {
+		printf("URL not provided. Returning with error.\n");
+		return -1;
+	}
+
+	printf("Preparing to POST to URL: %s\n", url);
+	CURL *curl;
+	CURLcode res;
+	curl_global_init(CURL_GLOBAL_ALL);
+	int http_code = 0;
+	struct curl_slist *headers = NULL;
+	headers = curl_slist_append(headers, "Accept: application/json");
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+	headers = curl_slist_append(headers, "charsets: utf-8");
+
+	curl = curl_easy_init();
+	if (curl) {
 		printf("In curl_post.....\n");
 
 		/* set URL */
 		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcrp/0.1");
 
 		res = curl_easy_perform(curl);
-		if(res!=CURLE_OK)
-		{
-			printf("curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
+		if (res != CURLE_OK) {
+			printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 		}
-		curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-		printf("HTTP return CODE %d",http_code);
-	}
-	else
-	{
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+		printf("HTTP return CODE %d", http_code);
+	} else {
 		printf("Curl initialization failed.\n");
 		curl_easy_cleanup(curl);
 		curl_slist_free_all(headers);
@@ -217,56 +185,47 @@ int curl_post(const char* url, char *postdata)
 	return http_code;
 }
 
-int curl_get(const char* url, struct result_st **result)
-{
-	if(!url)
-	{
+int curl_get(const char* url, struct json_response **result) {
+	if (!url) {
 		printf("URL not provided. Returning with error.\n");
 		return -1;
 	}
-	printf("Preparing to GET from URL: %s\n",url);
+	printf("Preparing to GET from URL: %s\n", url);
 	CURL *curl;
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_ALL);
-	int http_code = 0;	
-	struct curl_slist *headers =NULL;
-	headers=curl_slist_append(headers, "Accept: application/json");  
-   	headers=curl_slist_append( headers, "Content-Type: application/json");
-    	headers=curl_slist_append( headers, "charsets: utf-8"); 
-	
+	int http_code = 0;
+	struct curl_slist *headers = NULL;
+	headers = curl_slist_append(headers, "Accept: application/json");
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+	headers = curl_slist_append(headers, "charsets: utf-8");
+
 	curl = curl_easy_init();
-	if(curl)
-	{
+	if (curl) {
 		/* set URL */
 		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
-		if(result!=NULL)
-		{
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		if (result != NULL) {
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void **)result);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void **) result);
 		}
 		res = curl_easy_perform(curl);
-		if(res!=CURLE_OK)
-		{
-			printf("curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
+		if (res != CURLE_OK) {
+			printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 			curl_easy_cleanup(curl);
 			curl_slist_free_all(headers);
 			curl_global_cleanup();
 			return -1;
-		}
-		else
-		{
-			curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-			printf("HTTP return CODE %d\n",http_code);
+		} else {
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+			printf("HTTP return CODE %d\n", http_code);
 			curl_easy_cleanup(curl);
 			curl_slist_free_all(headers);
 			curl_global_cleanup();
 			return http_code;
 		}
 
-	}
-	else
-	{
+	} else {
 		printf("Curl initialization failed.\n");
 		curl_easy_cleanup(curl);
 		curl_slist_free_all(headers);
@@ -274,21 +233,21 @@ int curl_get(const char* url, struct result_st **result)
 		return -1;
 	}
 }
-static size_t write_callback(void *contents, size_t size, size_t nmemb, void **userp)
-{
-  size_t realsize = size * nmemb;
-  struct result_st *cf = (struct result_st *)(*userp);
- 
-  cf->payload = realloc(cf->payload, cf->size + realsize + 1);
-  if(cf->payload == NULL) {
-    /* out of memory! */ 
-    printf("not enough memory (realloc returned NULL)\n");
-    return -1;
-  }
- 
-  memcpy(&(cf->payload[cf->size]), contents, realsize);
-  cf->size += realsize;
-  cf->payload[cf->size] = 0;
- printf("In callback: %s\n",cf->payload);
-  return realsize;
+static size_t write_callback(void *contents, size_t size, size_t nmemb,
+		void **userp) {
+	size_t realsize = size * nmemb;
+	struct json_response *cf = (struct json_response *) (*userp);
+
+	cf->payload = realloc(cf->payload, cf->size + realsize + 1);
+	if (cf->payload == NULL) {
+		/* out of memory! */
+		printf("not enough memory (realloc returned NULL)\n");
+		return -1;
+	}
+
+	memcpy(&(cf->payload[cf->size]), contents, realsize);
+	cf->size += realsize;
+	cf->payload[cf->size] = 0;
+	printf("In callback: %s\n", cf->payload);
+	return realsize;
 }
