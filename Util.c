@@ -13,28 +13,30 @@
 #include "cJSON.h"
 //#include "../../dprint.h"
 
-//This generic function failing when values are null.
+//This function fails when values are null. ex: {"username":null}
 //Sending default values from the server.
 int parse_json_to_result(char *json, db_res_t** result) {
 	printf("received json: %s\n", json);
 	cJSON *root, *record;
-	int recourdCount = 0;
+	int recordCount = 0;
+	int colCount = 0;
 	int i = 0;
 	int j = 0;
 	int int_val = 0;
 	char *str_val = '\0';
 
 	root = cJSON_Parse(json);
-	recourdCount = cJSON_GetArraySize(root);
-	printf("array size: %d\n", recourdCount);
+	recordCount = cJSON_GetArraySize(root);
+	printf("array size: %d\n", recordCount);
 
 	*result = malloc(sizeof(db_res_t));
-
-	(*result)->rows = malloc(sizeof(db_row_t) * recourdCount);
-	for (i = 0; i < recourdCount; i++) {
+	(*result)->n = recordCount;
+	(*result)->rows = malloc(sizeof(db_row_t) * recordCount);
+	for (i = 0; i < recordCount; i++) {
 		j = 0;
 		record = cJSON_GetArrayItem(root, i);
-		(*result)->rows[i].values = malloc(sizeof(db_val_t));
+		colCount = cJSON_GetArraySize(record);
+		(*result)->rows[i].values = malloc(sizeof(db_val_t) * colCount);
 		cJSON *subitem = record->child;
 		while (subitem) {
 			if (subitem->type == cJSON_Number) {
@@ -45,12 +47,25 @@ int parse_json_to_result(char *json, db_res_t** result) {
 			} else {
 				str_val =
 						cJSON_GetObjectItem(record, subitem->string)->valuestring;
-				(*result)->rows[i].values[j++].val.str_val.s = str_val;
+				(*result)->rows[i].values[j++].val.str_val.s = strdup(str_val);
 //				printf("%s\n", str_val);
 			}
 			subitem = subitem->next;
 		}
 	}
+	/*
+	int count = (*result)->n;
+	printf("count: %d\n", count);
+	for (i = 0; i < count; i++) {
+		j = 0;
+		printf("Record: %d\n", j);
+		printf("id: %d\n", (*result)->rows[i].values[j++].val.int_val);
+		printf("User: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
+		printf("Domain: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
+		printf("Event: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
+		printf("Etag: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
+		printf("Expires: %d\n", (*result)->rows[i].values[j++].val.int_val);
+	}*/
 //	printf("Done\n");
 	cJSON_Delete(root);
 	return 1;
