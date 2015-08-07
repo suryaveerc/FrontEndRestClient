@@ -119,7 +119,7 @@ int getResource(const db_key_t* _k, const db_val_t* _v, const int _n,
 	else
 		printf("GET from %s returned with status %d. \n", url, status);
 	free(url);
-//	free(jresponse->payload);
+	free(jresponse->payload);
 	return (status == 200 ? 1 : 0);
 }
 

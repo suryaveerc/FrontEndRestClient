@@ -27,45 +27,46 @@ int parse_json_to_result(char *json, db_res_t** result) {
 
 	root = cJSON_Parse(json);
 	recordCount = cJSON_GetArraySize(root);
-	printf("array size: %d\n", recordCount);
-
-	*result = malloc(sizeof(db_res_t));
+	*result = calloc(1,sizeof(db_res_t));
 	(*result)->n = recordCount;
-	(*result)->rows = malloc(sizeof(db_row_t) * recordCount);
+	(*result)->rows = calloc(recordCount,sizeof(db_row_t) );
+
+	//this is done to get the count of columns only once.
+	record = cJSON_GetArrayItem(root, i);
+	colCount = cJSON_GetArraySize(record);
+
 	for (i = 0; i < recordCount; i++) {
 		j = 0;
 		record = cJSON_GetArrayItem(root, i);
-		colCount = cJSON_GetArraySize(record);
-		(*result)->rows[i].values = malloc(sizeof(db_val_t) * colCount);
+		(*result)->rows[i].n = colCount;
+		(*result)->rows[i].values = calloc(colCount,sizeof(db_val_t));
 		cJSON *subitem = record->child;
 		while (subitem) {
+//			printf("%d---%s: ", j, subitem->string);
 			if (subitem->type == cJSON_Number) {
 				int_val =
 						cJSON_GetObjectItem(record, subitem->string)->valueint;
+				(*result)->rows[i].values[j].type = DB_INT;
+				(*result)->rows[i].values[j].nul = 0;
 				(*result)->rows[i].values[j++].val.int_val = int_val;
 //				printf("%d\n", int_val);
 			} else {
 				str_val =
 						cJSON_GetObjectItem(record, subitem->string)->valuestring;
-				(*result)->rows[i].values[j++].val.str_val.s = strdup(str_val);
 //				printf("%s\n", str_val);
+				(*result)->rows[i].values[j].type = DB_STRING;
+				if (strcmp(str_val, "") == 0) {
+					(*result)->rows[i].values[j].nul = 1;
+					(*result)->rows[i].values[j++].free = 0;
+				} else {
+					(*result)->rows[i].values[j].nul = 0;
+					(*result)->rows[i].values[j].free = 1;
+					(*result)->rows[i].values[j++].val.string_val = strdup(str_val);
+				}
 			}
 			subitem = subitem->next;
 		}
 	}
-	/*
-	int count = (*result)->n;
-	printf("count: %d\n", count);
-	for (i = 0; i < count; i++) {
-		j = 0;
-		printf("Record: %d\n", j);
-		printf("id: %d\n", (*result)->rows[i].values[j++].val.int_val);
-		printf("User: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
-		printf("Domain: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
-		printf("Event: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
-		printf("Etag: %s\n", (*result)->rows[i].values[j++].val.str_val.s);
-		printf("Expires: %d\n", (*result)->rows[i].values[j++].val.int_val);
-	}*/
 //	printf("Done\n");
 	cJSON_Delete(root);
 	return 1;
@@ -224,3 +225,45 @@ int escapeXML(char *_b, char *_source) {
 	return len;
 }
 
+int free_result(db_res_t* _r)
+{
+	if (!_r)
+	{
+		return -1;
+	}
+	int i,row_count=0;
+	int col_count=0;
+	printf("freeing result set at %p\n", _r);
+	row_count = _r->n;
+	printf("RowCount %d .\n",row_count);
+	for(i=0;i<row_count;i++)
+	{
+		printf("Freeing %d row.\n",i);
+		col_count= _r->rows[i].n;
+		printf("col_count %d .\n",col_count);
+		int j=0;
+		for(j=0;j<col_count;j++)
+		{
+			if(_r->rows[i].values[j].type == DB_STRING && _r->rows[i].values[j].nul==0)
+			{
+				printf("Freeing %d col.\n",j);
+				free(_r->rows[i].values[j].val.string_val);
+				_r->rows[i].values[j].val.string_val =NULL;
+			}
+			else if(_r->rows[i].values[j].type == DB_STR  && _r->rows[i].values[j].nul==0)
+			{
+				printf("Freeing %d col.",j);
+				free(_r->rows[i].values[j].val.str_val.s);
+				_r->rows[i].values[j].val.str_val.s =NULL;
+			}
+		}
+		free(_r->rows[i].values);
+		_r->rows[i].values = NULL;
+	}
+	free(_r->rows);
+	_r->rows =NULL;
+	free(_r);
+	_r = NULL;
+	printf("freed result set a %p\n", _r);
+	return 0;
+}

@@ -28,9 +28,12 @@ int main(void) {
 
 void test_util_get() {
 	db_res_t *result = NULL;
-	char* url =
+	/*char* url =
 			"http://192.168.254.1:8080/PresenceRepository/rest/V1/presentity";
-	getResource(NULL, NULL, 0, &result, PRESENTITY, NULL);
+	getResource(NULL, NULL, 0, &result, PRESENTITY, NULL);*/
+	char* json = "[{\"id\":11,\"username\":\"microsip\",\"domain\":\"192.168.254.128\",\"event\":\"presence\",\"etag\":\"a.1437194656.2922.1.0\",\"expires\":1437200355,\"received_time\":-1,\"body\":\"\",\"extra_hdrs\":\"\",\"sender\":\"\"},{\"id\":12,\"username\":\"microsip\",\"domain\":\"92.168.254.128\",\"event\":\"presence\",\"etag\":\"a.1437194656.2922.1.0\",\"expires\":1437200355,\"received_time\":-1,\"body\":\"\",\"extra_hdrs\":\"\",\"sender\":\"\"}]";
+	parse_json_to_result(json,&result);
+	free_result(result);
 }
 
 int testPost() {
